@@ -1,0 +1,62 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# =========================
+# Django
+# =========================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media & static files
+media/
+staticfiles/
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+
+# =========================
+# VS Code / IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Ollama / models (if any local cache)
+# =========================
+*.bin
+*.pt
+*.onnx
+
+# =========================
+# Audio files (optional)
+# =========================
+*.wav
+*.mp3
+*.m4a
+
+# =========================
+# Logs / temp
+# =========================
+*.log
+tmp/
+temp/
