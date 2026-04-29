@@ -129,11 +129,24 @@ def run_intake_agent(session, user_message: str) -> dict:
         result["reply"] = "Can you tell me more about your symptoms?"
 
     # --- Fix incorrect phase logic ---
-    if result["phase"] == "cc" and result["is_complete"]:
-        result["is_complete"] = False
+    # --- Phase guard — only allow forward movement, never backwards ---
+    PHASE_ORDER = ['cc', 'hpi', 'ros', 'done']
 
-    if result["collected_data"]["cc"].get("complaint"):
-        result["phase"] = "hpi"
+    model_phase   = result['phase']   if result['phase']   in PHASE_ORDER else 'cc'
+    session_phase = session.current_phase if session.current_phase in PHASE_ORDER else 'cc'
+
+    model_idx   = PHASE_ORDER.index(model_phase)
+    session_idx = PHASE_ORDER.index(session_phase)
+
+    # If the model tried to go backwards (e.g. back to hpi from ros), ignore it
+    if model_idx < session_idx:
+        result['phase'] = session_phase   # keep current phase
+    else:
+        result['phase'] = model_phase     # accept the model's advancement
+
+    # is_complete only makes sense on 'done'
+    if result['phase'] != 'done':
+        result['is_complete'] = False
 
     # --- Merge data ---
     merged_data = _merge_collected_data(
