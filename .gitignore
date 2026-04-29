@@ -1,62 +1,62 @@
-# =========================
-# Python
-# =========================
+# ─── Python / Django ──────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
 
 # Virtual environments
 venv/
 env/
 .venv/
+ENV/
 
-# =========================
 # Django
-# =========================
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+/backend/staticfiles/
+/backend/media/
 
-# Media & static files
-media/
-staticfiles/
-
-# =========================
-# Environment variables
-# =========================
+# Environment variables — NEVER commit these
 .env
-.env.*
+.env.local
+.env.*.local
 
-# =========================
-# VS Code / IDE
-# =========================
+# ─── Node / React ─────────────────────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Vite
+/frontend/.vite/
+
+# ─── IDEs ─────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
-
-# =========================
-# OS files
-# =========================
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
 
-# =========================
-# Ollama / models (if any local cache)
-# =========================
-*.bin
+# ─── Whisper model cache ───────────────────────────────────────────────────────
+# Whisper downloads model weights (~140MB for base) on first run.
+# They live in ~/.cache/whisper — no need to commit.
 *.pt
-*.onnx
 
-# =========================
-# Audio files (optional)
-# =========================
-*.wav
-*.mp3
-*.m4a
-
-# =========================
-# Logs / temp
-# =========================
-*.log
-tmp/
-temp/
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+*.tmp
+*.bak
