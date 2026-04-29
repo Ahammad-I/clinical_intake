@@ -234,16 +234,22 @@ class TranscribeAudioView(APIView):
             role='agent',
             content=agent_result['reply'],
         )
-
         return Response({
-            'transcript':     transcript,
-            'reply':          agent_result['reply'],
-            'current_phase':  agent_result['phase'],
-            'is_complete':    agent_result['is_complete'],
-            'collected_data': agent_result['collected_data'],
-            'user_message_id':  user_message.id,
-            'agent_message_id': agent_message.id,
-        }, status=status.HTTP_200_OK)
+    'transcript':     transcript,
+    'reply':          agent_result['reply'],
+    'current_phase':  agent_result['phase'],
+    'is_complete':    agent_result['is_complete'],
+    'collected_data': agent_result['collected_data'],
+    # ← ADD THIS BLOCK — matches what sendMessage returns
+    # so applyAgentResponse() in the frontend picks it up
+    'message': {
+        'id':              agent_message.id,
+        'role':            agent_message.role,
+        'content':         agent_message.content,
+        'timestamp':       agent_message.timestamp,
+        'was_transcribed': agent_message.was_transcribed,
+    },
+}, status=status.HTTP_200_OK)
 
 
 # ─── Brief generation ─────────────────────────────────────────────────────────
