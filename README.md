@@ -1,18 +1,24 @@
 # Clinical Intake Agent
 
-An AI-powered pre-visit clinical intake system. A conversational agent (backed by **Groq + LLaMA 3.1**) acts as an intake nurse, guiding a patient through Chief Complaint → History of Present Illness → Review of Systems, then generates a structured clinical brief ready for physician review.
+An AI-powered pre-visit clinical intake system. A conversational agent guides a patient through Chief Complaint → History of Present Illness → Review of Systems, then generates a structured clinical brief ready for physician review.
+
+> **Live Demo**
+> - **Frontend:** https://clinical-intake-pi.vercel.app/
+> - **Backend API:** https://clinical-intake-backend.onrender.com
 
 ---
 
 ## Tech Stack
 
-| Layer     | Technology                          |
-|-----------|-------------------------------------|
-| Backend   | Django 4.2 + Django REST Framework  |
-| AI Agent  | Groq API — `llama-3.1-8b-instant`   |
-| Voice STT | OpenAI Whisper (runs locally)       |
-| Database  | SQLite (zero config)                |
-| Frontend  | React 18 + Vite                     |
+| Layer | Technology |
+|---|---|
+| Backend | Django 4.2 + Django REST Framework |
+| AI Agent | Groq API — llama-3.1-8b-instant |
+| Voice STT | OpenAI Whisper (runs locally) |
+| Database | SQLite (zero config) |
+| Frontend | React 18 + Vite |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
 
 ---
 
@@ -84,13 +90,12 @@ sudo apt install ffmpeg
 # macOS
 brew install ffmpeg
 
-# Windows — download from https://ffmpeg.org/download.html
-# and add to PATH
+# Windows — download from https://ffmpeg.org/download.html and add to PATH
 ```
 
 ---
 
-## Setup
+## Local Setup
 
 ### 1 — Get a free Groq API key
 
@@ -126,7 +131,7 @@ npm run dev
 # → http://localhost:5173
 ```
 
-Open **http://localhost:5173** in your browser.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
@@ -149,30 +154,82 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
->  
+---
+
+## Deployment
+
+The application is deployed with the frontend on **Vercel** and the backend on **Render**.
+
+### Backend — Render
+
+The Django backend is hosted as a **Web Service** on [Render](https://render.com).
+
+**Key configuration:**
+
+| Setting | Value |
+|---|---|
+| Runtime | Python 3.11 |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `gunicorn config.wsgi:application` |
+| Environment | Set all variables from `.env.example` in Render's dashboard |
+
+**Required environment variables on Render:**
+
+```
+DEBUG=False
+SECRET_KEY=<strong-random-key>
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama-3.1-8b-instant
+WHISPER_MODEL=base
+ALLOWED_HOSTS=clinical-intake-backend.onrender.com
+CORS_ALLOWED_ORIGINS=https://clinical-intake-pi.vercel.app
+```
+
+> **Note:** Render's free tier spins down after inactivity. The first request after a period of idle may take 30–60 seconds while the instance wakes up.
+
+### Frontend — Vercel
+
+The React + Vite frontend is deployed on [Vercel](https://vercel.com).
+
+**Key configuration:**
+
+| Setting | Value |
+|---|---|
+| Framework Preset | Vite |
+| Root Directory | `frontend/` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+
+**Environment variable on Vercel:**
+
+```
+VITE_API_BASE_URL=https://clinical-intake-backend.onrender.com
+```
+
+Update `intakeApi.js` (or your Axios base URL) to read from `import.meta.env.VITE_API_BASE_URL` so the frontend points to the live backend instead of the local proxy.
+
+**Automatic deploys:** Vercel redeploys on every push to your main branch automatically.
 
 ---
 
 ## API Endpoints
 
-All endpoints are under `http://127.0.0.1:8000/api/intake/`
+All endpoints are under `https://clinical-intake-backend.onrender.com/api/intake/` (production) or `http://127.0.0.1:8000/api/intake/` (local).
 
-| Method | Endpoint                              | Description                          |
-|--------|---------------------------------------|--------------------------------------|
-| POST   | `/sessions/`                          | Create a new intake session          |
-| GET    | `/sessions/`                          | List all sessions                    |
-| GET    | `/sessions/{id}/`                     | Get full session with messages       |
-| DELETE | `/sessions/{id}/`                     | Delete a session                     |
-| POST   | `/sessions/{id}/message/`             | Send text → get agent reply          |
-| POST   | `/sessions/{id}/transcribe/`          | Upload audio → transcribe → reply    |
-| POST   | `/sessions/{id}/generate-brief/`      | Generate the clinical brief          |
-| GET    | `/sessions/{id}/brief/`               | Retrieve the generated brief         |
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/sessions/` | Create a new intake session |
+| GET | `/sessions/` | List all sessions |
+| GET | `/sessions/{id}/` | Get full session with messages |
+| DELETE | `/sessions/{id}/` | Delete a session |
+| POST | `/sessions/{id}/message/` | Send text → get agent reply |
+| POST | `/sessions/{id}/transcribe/` | Upload audio → transcribe → reply |
+| POST | `/sessions/{id}/generate-brief/` | Generate the clinical brief |
+| GET | `/sessions/{id}/brief/` | Retrieve the generated brief |
 
 See `backend/API_REFERENCE.md` for full request/response examples.
 
----
-
-## Testing the API (PowerShell)
+### Testing the API (PowerShell)
 
 ```powershell
 # Create session
@@ -217,7 +274,7 @@ Phase 3 — Review of Systems (ROS)
       │
       ▼
 Brief Generation
-  GPT produces structured CC / HPI / ROS JSON
+  LLM produces structured CC / HPI / ROS JSON
   + full EHR-formatted note
 ```
 
@@ -225,7 +282,7 @@ Brief Generation
 
 ## Voice Input
 
-The app uses your browser's `MediaRecorder` API to capture audio, sends it to the `/transcribe/` endpoint, which runs **Whisper locally** (no cloud cost) and returns a transcript. The transcript is then passed to the agent exactly like a typed message.
+The app uses the browser's `MediaRecorder` API to capture audio, sends it to the `/transcribe/` endpoint, and runs Whisper locally (no cloud cost) to return a transcript. The transcript is then passed to the agent exactly like a typed message.
 
 > Whisper downloads the model (~140 MB for `base`) on first use. This is a one-time download stored in `~/.cache/whisper`.
 
